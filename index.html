@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus Nexus - IIoT платформа для создания цифровых двойников</title>
+    <style>
+        :root {
+            --dark-bg: #0f0f1a;
+            --darker-bg: #0a0a12;
+            --card-bg: #1a1a2e;
+            --card-hover: #22223a;
+            --text-light: #e6e6ff;
+            --text-muted: #a0a0c0;
+            --accent-blue: #4FC3F7;
+            --accent-pink: #E91E63;
+            --accent-purple: #7B1FA2;
+            --blue-dark: #0D47A1;
+            --red: #D32F2F;
+            --white: #FFFFFF;
+            --gray: #9E9E9E;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--darker-bg), var(--card-bg));
+            color: var(--text-light);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .logo-text-top {
+            font-size: 18px;
+            color: var(--accent-blue);
+        }
+        
+        .logo-text-bottom {
+            font-size: 22px;
+            color: var(--text-light);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+        
+        nav ul li {
+            margin-left: 30px;
+        }
+        
+        nav ul li a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        
+        nav ul li a:hover {
+            color: var(--accent-blue);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            color: var(--white);
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(233, 30, 99, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        
+        .cart-btn {
+            position: relative;
+            background: transparent;
+            border: 2px solid var(--accent-blue);
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: var(--accent-blue);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cart-btn:hover {
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+        
+        .cart-count {
+            background-color: var(--accent-pink);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(79, 195, 247, 0.1);
+            position: relative;
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-header h2 {
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--darker-bg);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Cart Modal */
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100%;
+            background: var(--card-bg);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            flex-direction: column;
+        }
+        
+        .cart-modal.active {
+            display: flex;
+        }
+        
+        .cart-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--darker-bg), var(--card-bg));
+            color: var(--text-light);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .cart-header h3 {
+            margin: 0;
+        }
+        
+        .close-cart {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .cart-items {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .cart-item-info h4 {
+            margin-bottom: 5px;
+            color: var(--accent-blue);
+        }
+        
+        .cart-item-details {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        .cart-item-price {
+            font-weight: bold;
+            color: var(--accent-pink);
+        }
+        
+        .remove-item {
+            background: var(--accent-pink);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .cart-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1500;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+        
+        /* Chat Support */
+        .chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: transform 0.3s;
+        }
+        
+        .chat-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .chat-modal {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .chat-modal.active {
+            display: flex;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--darker-bg), var(--card-bg));
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .chat-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .close-chat {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .message.bot {
+            align-self: flex-start;
+            background: var(--darker-bg);
+            border-bottom-left-radius: 5px;
+            color: var(--text-light);
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            background: var(--accent-blue);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            background: var(--darker-bg);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            border-radius: 25px;
+            outline: none;
+            color: var(--text-light);
+        }
+        
+        .chat-input button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+            color: var(--text-light);
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, rgba(79, 195, 247, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 20%, rgba(233, 30, 99, 0.1) 0%, transparent 50%);
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: var(--text-muted);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background-color: var(--dark-bg);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title h2 {
+            font-size: 36px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            background-color: var(--card-hover);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--white);
+            font-size: 30px;
+        }
+        
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+        
+        .feature-card p {
+            color: var(--text-muted);
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: 100px 0;
+            background-color: var(--darker-bg);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .pricing-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            background-color: var(--card-hover);
+        }
+        
+        .pricing-card.popular {
+            border: 3px solid var(--accent-pink);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.popular:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: var(--accent-pink);
+            color: white;
+            padding: 8px 40px;
+            transform: rotate(45deg);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .pricing-header {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            color: white;
+        }
+        
+        .pricing-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-price {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .pricing-period {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .pricing-features {
+            padding: 30px;
+            flex: 1;
+        }
+        
+        .pricing-features ul {
+            list-style: none;
+        }
+        
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.1);
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+        }
+        
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-check {
+            color: var(--accent-blue);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .pricing-button {
+            text-align: center;
+            padding: 0 30px 30px;
+        }
+        
+        /* Custom Plan Section */
+        .custom-plan {
+            padding: 80px 0;
+            background-color: var(--dark-bg);
+        }
+        
+        .custom-plan-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .custom-plan-header {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            color: white;
+            position: relative;
+        }
+        
+        .custom-plan-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .custom-plan-price {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .custom-plan-config {
+            padding: 30px;
+        }
+        
+        .config-group {
+            margin-bottom: 25px;
+        }
+        
+        .config-group h4 {
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+        
+        .config-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .config-option {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .config-option input[type="radio"] {
+            display: none;
+        }
+        
+        .config-option label {
+            display: block;
+            padding: 12px 15px;
+            background: var(--darker-bg);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            color: var(--text-muted);
+        }
+        
+        .config-option input[type="radio"]:checked + label {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .config-option input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--darker-bg);
+            border: 2px solid rgba(79, 195, 247, 0.2);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-light);
+        }
+        
+        .addons-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .addon-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--darker-bg);
+            border-radius: 8px;
+        }
+        
+        .addon-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .addon-price {
+            font-weight: bold;
+            color: var(--accent-pink);
+        }
+        
+        .custom-plan-summary {
+            padding: 20px 30px;
+            background: var(--darker-bg);
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
+        
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+        
+        .minimum-price-notice {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--white);
+            opacity: 0.9;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 0;
+            background-color: var(--darker-bg);
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            position: relative;
+        }
+        
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-pink));
+            z-index: 1;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            padding: 0 20px;
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--white);
+            font-size: 30px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+        
+        .step p {
+            color: var(--text-muted);
+        }
+        
+        /* CTA Section */
+        .cta {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+            color: var(--text-light);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 50%, rgba(233, 30, 99, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 30% 20%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+        }
+        
+        .cta h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .cta p {
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            color: var(--text-muted);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--darker-bg);
+            color: var(--text-light);
+            padding: 60px 0 30px;
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-column ul li a:hover {
+            color: var(--accent-blue);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(79, 195, 247, 0.1);
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0 10px 10px;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .steps {
+                flex-direction: column;
+            }
+            
+            .steps::before {
+                display: none;
+            }
+            
+            .step {
+                margin-bottom: 40px;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+            
+            .pricing-card.popular:hover {
+                transform: translateY(-10px);
+            }
+            
+            .cart-modal {
+                width: 100%;
+            }
+            
+            .config-options {
+                flex-direction: column;
+            }
+            
+            .config-option {
+                min-width: 100%;
+            }
+            
+            .chat-modal {
+                width: 90%;
+                right: 5%;
+                bottom: 80px;
+            }
+            
+            .chat-btn {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-container" onclick="scrollToTop()">
+                    <div class="logo-image">PN</div>
+                    <div class="logo-text">
+                        <div class="logo-text-top">PROMETHEUS</div>
+                        <div class="logo-text-bottom">NEXUS</div>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a onclick="scrollToSection('features')">Возможности</a></li>
+                        <li><a onclick="scrollToSection('pricing')">Тарифы</a></li>
+                        <li><a onclick="scrollToSection('how-it-works')">Как это работает</a></li>
+                        <li><a onclick="scrollToSection('contact')">Контакты</a></li>
+                        <li>
+                            <button class="cart-btn" onclick="openCart()">
+                                🛒 Корзина
+                                <span class="cart-count">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                <button class="btn" onclick="openModal('demoModal')">Запросить демо</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Demo Modal -->
+    <div class="modal" id="demoModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('demoModal')">&times;</button>
+            <div class="modal-header">
+                <h2>Запросить демо-версию</h2>
+                <p>Заполните форму, и мы свяжемся с вами в течение 24 часов</p>
+            </div>
+            <form id="demoForm" onsubmit="submitDemoForm(event)">
+                <div class="form-group">
+                    <label for="demoName">Имя</label>
+                    <input type="text" id="demoName" required>
+                </div>
+                <div class="form-group">
+                    <label for="demoCompany">Компания</label>
+                    <input type="text" id="demoCompany" required>
+                </div>
+                <div class="form-group">
+                    <label for="demoEmail">Email</label>
+                    <input type="email" id="demoEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="demoPhone">Телефон</label>
+                    <input type="tel" id="demoPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="demoMessage">Сообщение</label>
+                    <textarea id="demoMessage" placeholder="Расскажите о ваших потребностях..."></textarea>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Отправить запрос</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trial Modal -->
+    <div class="modal" id="trialModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('trialModal')">&times;</button>
+            <div class="modal-header">
+                <h2>Начать бесплатный пробный период</h2>
+                <p>Создайте аккаунт для доступа к платформе на 14 дней</p>
+            </div>
+            <form id="trialForm" onsubmit="submitTrialForm(event)">
+                <div class="form-group">
+                    <label for="trialName">Имя</label>
+                    <input type="text" id="trialName" required>
+                </div>
+                <div class="form-group">
+                    <label for="trialEmail">Email</label>
+                    <input type="email" id="trialEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="trialPassword">Пароль</label>
+                    <input type="password" id="trialPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="trialCompany">Компания</label>
+                    <input type="text" id="trialCompany">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Создать аккаунт</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal" id="contactModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('contactModal')">&times;</button>
+            <div class="modal-header">
+                <h2>Связаться с нами</h2>
+                <p>Мы ответим на все ваши вопросы</p>
+            </div>
+            <form id="contactForm" onsubmit="submitContactForm(event)">
+                <div class="form-group">
+                    <label for="contactName">Имя</label>
+                    <input type="text" id="contactName" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Email</label>
+                    <input type="email" id="contactEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactSubject">Тема</label>
+                    <input type="text" id="contactSubject" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactMessage">Сообщение</label>
+                    <textarea id="contactMessage" required></textarea>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Отправить сообщение</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-header">
+            <h3>Корзина</h3>
+            <button class="close-cart" onclick="closeCart()">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart-message" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                Корзина пуста
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Итого:</span>
+                <span id="cartTotal">0 ₽</span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
+        </div>
+    </div>
+
+    <!-- Chat Support -->
+    <div class="chat-btn" onclick="toggleChat()">💬</div>
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-header">
+            <h3>💬 Поддержка</h3>
+            <button class="close-chat" onclick="toggleChat()">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                Здравствуйте! Чем могу помочь? Задайте вопрос о наших тарифах или возможностях платформы.
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Введите ваш вопрос...">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Создавайте цифровых двойников для ваших продуктов</h1>
+            <p>Облачная IIoT-платформа Prometheus Nexus позволяет любой команде создать "цифрового двойника" (Digital Twin) своего продукта и его экосистемы. Она эмулирует реальный мир с помощью тысяч виртуальных IoT-датчиков и устройств, генерируя потоки данных.</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Мощные возможности платформы</h2>
+                <p>Prometheus Nexus предоставляет все необходимые инструменты для создания и управления цифровыми двойниками</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" onclick="showFeatureInfo('Виртуальные датчики - создавайте тысячи IoT-датчиков для эмуляции реальных условий')">
+                    <div class="feature-icon">📊</div>
+                    <h3>Виртуальные датчики</h3>
+                    <p>Создавайте тысячи виртуальных IoT-датчиков для эмуляции реальных условий работы вашего продукта</p>
+                </div>
+                <div class="feature-card" onclick="showFeatureInfo('Мониторинг в реальном времени с возможностью прогнозирования поведения системы')">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Реальное время</h3>
+                    <p>Мониторинг и анализ данных в реальном времени с возможностью прогнозирования поведения системы</p>
+                </div>
+                <div class="feature-card" onclick="showFeatureInfo('Моделируйте не только продукт, но и всю его экосистему для полного понимания взаимодействий')">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Экосистема</h3>
+                    <p>Моделируйте не только продукт, но и всю его экосистему для полного понимания взаимодействий</p>
+                </div>
+                <div class="feature-card" onclick="showFeatureInfo('Глубокий анализ данных и автоматическое создание отчетов для принятия обоснованных решений')">
+                    <div class="feature-icon">📈</div>
+                    <h3>Аналитика и отчеты</h3>
+                    <p>Глубокий анализ данных и автоматическое создание отчетов для принятия обоснованных решений</p>
+                </div>
+                <div class="feature-card" onclick="showFeatureInfo('Многоуровневая система безопасности данных и соответствие международным стандартам')">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Безопасность</h3>
+                    <p>Многоуровневая система безопасности данных и соответствие международным стандартам</p>
+                </div>
+                <div class="feature-card" onclick="showFeatureInfo('Легко масштабируйте решение от небольших проектов до глобальных промышленных систем')">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Масштабируемость</h3>
+                    <p>Легко масштабируйте решение от небольших проектов до глобальных промышленных систем</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>Выберите подходящий тариф</h2>
+                <p>Гибкие тарифные планы Prometheus Nexus для проектов любого масштаба</p>
+            </div>
+            <div class="pricing-grid">
+                <!-- Стартап тариф -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div class="pricing-name">Стартап</div>
+                        <div class="pricing-price">50 000 ₽</div>
+                        <div class="pricing-period">в месяц</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li><span class="feature-check">✓</span> до 100 виртуальных устройств</li>
+                            <li><span class="feature-check">✓</span> 1 сценарий моделирования</li>
+                            <li><span class="feature-check">✓</span> Базовая визуализация данных</li>
+                            <li><span class="feature-check">✓</span> Техническая поддержка по email</li>
+                            <li><span class="feature-check">✓</span> Обновления платформы</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-button">
+                        <button class="btn" onclick="addToCart('startup', 'Стартап', 50000, 'до 100 устройств, 1 сценарий, базовая визуализация')">Добавить в корзину</button>
+                    </div>
+                </div>
+
+                <!-- Прорыв тариф -->
+                <div class="pricing-card popular">
+                    <div class="popular-badge">ПОПУЛЯРНЫЙ</div>
+                    <div class="pricing-header">
+                        <div class="pricing-name">Прорыв</div>
+                        <div class="pricing-price">300 000 ₽</div>
+                        <div class="pricing-period">в месяц</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li><span class="feature-check">✓</span> до 10 000 виртуальных устройств</li>
+                            <li><span class="feature-check">✓</span> до 5 сценариев моделирования</li>
+                            <li><span class="feature-check">✓</span> Интерактивная визуализация</li>
+                            <li><span class="feature-check">✓</span> Приоритетная поддержка</li>
+                            <li><span class="feature-check">✓</span> Расширенная аналитика</li>
+                            <li><span class="feature-check">✓</span> API доступ</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-button">
+                        <button class="btn" onclick="addToCart('breakthrough', 'Прорыв', 300000, 'до 10 000 устройств, 5 сценариев, интерактивная визуализация')">Добавить в корзину</button>
+                    </div>
+                </div>
+
+                <!-- Единорог тариф -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div class="pricing-name">Единорог</div>
+                        <div class="pricing-price">4 000 000 ₽</div>
+                        <div class="pricing-period">в месяц</div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li><span class="feature-check">✓</span> Неограниченное число устройств</li>
+                            <li><span class="feature-check">✓</span> Неограниченное число сценариев</li>
+                            <li><span class="feature-check">✓</span> Полная кастомизация</li>
+                            <li><span class="feature-check">✓</span> Выделенный менеджер</li>
+                            <li><span class="feature-check">✓</span> 24/7 премиум-поддержка</li>
+                            <li><span class="feature-check">✓</span> Интеграция с корпоративными системами</li>
+                        </ul>
+                    </div>
+                    <div class="pricing-button">
+                        <button class="btn" onclick="addToCart('unicorn', 'Единорог', 4000000, 'неограниченные устройства и сценарии, полная кастомизация')">Добавить в корзину</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Plan Section -->
+    <section class="custom-plan" id="custom-plan">
+        <div class="container">
+            <div class="section-title">
+                <h2>Соберите свой тариф</h2>
+                <p>Настройте платформу под ваши уникальные требования</p>
+            </div>
+            
+            <div class="custom-plan-card">
+                <div class="custom-plan-header">
+                    <div class="custom-plan-name">Конструктор</div>
+                    <div class="custom-plan-price" id="customPlanPrice">55 000 ₽</div>
+                    <div class="pricing-period">в месяц</div>
+                    <div class="minimum-price-notice">* Минимальная стоимость тарифа: 55 000 ₽</div>
+                </div>
+                
+                <div class="custom-plan-config">
+                    <!-- Устройства -->
+                    <div class="config-group">
+                        <h4>Количество устройств</h4>
+                        <div class="config-option">
+                            <input type="number" id="devicesCount" min="1" value="100" onchange="updateCustomPlanPrice()">
+                        </div>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">
+                            Коэффициент масштабирования: <span id="scalingFactor">1.0</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Сценарии -->
+                    <div class="config-group">
+                        <h4>Количество сценариев</h4>
+                        <div class="config-option">
+                            <input type="number" id="scenariosCount" min="1" value="1" onchange="updateCustomPlanPrice()">
+                        </div>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">
+                            Стоимость: <span id="scenariosCost">4 000</span> ₽ за сценарий
+                        </p>
+                    </div>
+                    
+                    <!-- Визуализация -->
+                    <div class="config-group">
+                        <h4>Тип визуализации</h4>
+                        <div class="config-options">
+                            <div class="config-option">
+                                <input type="radio" id="viz2d" name="visualization" value="0" checked onchange="updateCustomPlanPrice()">
+                                <label for="viz2d">2D (базовая)</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="vizInteractive" name="visualization" value="8000" onchange="updateCustomPlanPrice()">
+                                <label for="vizInteractive">Интерактив</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="viz3d" name="visualization" value="20000" onchange="updateCustomPlanPrice()">
+                                <label for="viz3d">3D моделирование</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Интеграция -->
+                    <div class="config-group">
+                        <h4>Уровень интеграции</h4>
+                        <div class="config-options">
+                            <div class="config-option">
+                                <input type="radio" id="integrationNone" name="integration" value="0" checked onchange="updateCustomPlanPrice()">
+                                <label for="integrationNone">Нет</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="integrationPartial" name="integration" value="15000" onchange="updateCustomPlanPrice()">
+                                <label for="integrationPartial">Частичная</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="integrationFull" name="integration" value="30000" onchange="updateCustomPlanPrice()">
+                                <label for="integrationFull">Полная</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Поддержка -->
+                    <div class="config-group">
+                        <h4>Уровень поддержки</h4>
+                        <div class="config-options">
+                            <div class="config-option">
+                                <input type="radio" id="supportStandard" name="support" value="0" checked onchange="updateCustomPlanPrice()">
+                                <label for="supportStandard">Стандартная</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="supportPriority" name="support" value="10000" onchange="updateCustomPlanPrice()">
+                                <label for="supportPriority">Приоритетная</label>
+                            </div>
+                            <div class="config-option">
+                                <input type="radio" id="support247" name="support" value="20000" onchange="updateCustomPlanPrice()">
+                                <label for="support247">24/7</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Дополнительные модули -->
+                    <div class="config-group">
+                        <h4>Дополнительные модули</h4>
+                        <div class="addons-list">
+                            <div class="addon-item">
+                                <div class="addon-info">
+                                    <input type="checkbox" id="addonAI" class="addon-checkbox" value="15000" onchange="updateCustomPlanPrice()">
+                                    <label for="addonAI">AI-анализ данных</label>
+                                </div>
+                                <div class="addon-price">15 000 ₽</div>
+                            </div>
+                            <div class="addon-item">
+                                <div class="addon-info">
+                                    <input type="checkbox" id="addonMonitoring" class="addon-checkbox" value="15000" onchange="updateCustomPlanPrice()">
+                                    <label for="addonMonitoring">Расширенный мониторинг</label>
+                                </div>
+                                <div class="addon-price">15 000 ₽</div>
+                            </div>
+                            <div class="addon-item">
+                                <div class="addon-info">
+                                    <input type="checkbox" id="addonReports" class="addon-checkbox" value="15000" onchange="updateCustomPlanPrice()">
+                                    <label for="addonReports">Автоматические отчеты</label>
+                                </div>
+                                <div class="addon-price">15 000 ₽</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="custom-plan-summary">
+                    <div class="summary-item">
+                        <span>Устройства (<span id="summaryDevices">100</span> шт.):</span>
+                        <span id="summaryDevicesPrice">2 000 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Сценарии (<span id="summaryScenarios">1</span> шт.):</span>
+                        <span id="summaryScenariosPrice">4 000 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Визуализация:</span>
+                        <span id="summaryVisualizationPrice">0 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Интеграция:</span>
+                        <span id="summaryIntegrationPrice">0 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Поддержка:</span>
+                        <span id="summarySupportPrice">0 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Доп. модули:</span>
+                        <span id="summaryAddonsPrice">0 ₽</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Итого:</span>
+                        <span id="summaryTotalPrice">55 000 ₽</span>
+                    </div>
+                </div>
+                
+                <div class="pricing-button">
+                    <button class="btn" onclick="addCustomPlanToCart()">Добавить в корзину</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>Как это работает</h2>
+                <p>Всего 4 простых шага для создания вашего первого цифрового двойника с Prometheus Nexus</p>
+            </div>
+            <div class="steps">
+                <div class="step" onclick="showStepInfo('Загрузите 3D-модель вашего продукта или создайте ее с помощью нашего конструктора')">
+                    <div class="step-number">1</div>
+                    <h3>Создайте модель</h3>
+                    <p>Загрузите 3D-модель вашего продукта или создайте ее с помощью нашего конструктора</p>
+                </div>
+                <div class="step" onclick="showStepInfo('Настройте виртуальные датчики для сбора данных о работе вашего продукта')">
+                    <div class="step-number">2</div>
+                    <h3>Добавьте датчики</h3>
+                    <p>Настройте виртуальные датчики для сбора данных о работе вашего продукта</p>
+                </div>
+                <div class="step" onclick="showStepInfo('Определите правила и сценарии поведения цифрового двойника в различных условиях')">
+                    <div class="step-number">3</div>
+                    <h3>Настройте логику</h3>
+                    <p>Определите правила и сценарии поведения цифрового двойника в различных условиях</p>
+                </div>
+                <div class="step" onclick="showStepInfo('Запустите симуляцию и анализируйте данные в реальном времени')">
+                    <div class="step-number">4</div>
+                    <h3>Запустите симуляцию</h3>
+                    <p>Запустите симуляцию и анализируйте данные в реальном времени</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Готовы создать свой первый цифровой двойник?</h2>
+            <p>Присоединяйтесь к сотням компаний, которые уже используют Prometheus Nexus для оптимизации своих продуктов и процессов</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Prometheus Nexus</h3>
+                    <p>Ведущая облачная IIoT-платформа для создания цифровых двойников продуктов и их экосистем.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Продукт</h3>
+                    <ul>
+                        <li><a onclick="scrollToSection('features')">Возможности</a></li>
+                        <li><a onclick="scrollToSection('pricing')">Тарифы</a></li>
+                        <li><a onclick="scrollToSection('how-it-works')">Как это работает</a></li>
+                        <li><a onclick="openModal('demoModal')">Демо</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Поддержка</h3>
+                    <ul>
+                        <li><a onclick="contactSupport()">Помощь</a></li>
+                        <li><a onclick="showDocs()">Документация</a></li>
+                        <li><a onclick="openModal('contactModal')">Контакты</a></li>
+                        <li><a onclick="showSystemStatus()">Статус системы</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Компания</h3>
+                    <ul>
+                        <li><a onclick="showAbout()">О нас</a></li>
+                        <li><a onclick="visitBlog()">Блог</a></li>
+                        <li><a onclick="showCareers()">Карьера</a></li>
+                        <li><a onclick="showPartners()">Партнеры</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 Prometheus Nexus. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Cart functionality
+        let cart = [];
+        const cartModal = document.getElementById('cartModal');
+        const overlay = document.getElementById('overlay');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        const cartCount = document.querySelector('.cart-count');
+
+        // Chat functionality
+        const chatModal = document.getElementById('chatModal');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+
+        // Navigation functions
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showNotification('Переход на главную страницу');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Form submission functions
+        function submitDemoForm(event) {
+            event.preventDefault();
+            showNotification('Запрос на демо-версию отправлен! Мы свяжемся с вами в течение 24 часов.');
+            closeModal('demoModal');
+            document.getElementById('demoForm').reset();
+        }
+
+        function submitTrialForm(event) {
+            event.preventDefault();
+            showNotification('Бесплатный пробный период активирован! Проверьте вашу почту для подтверждения.');
+            closeModal('trialModal');
+            document.getElementById('trialForm').reset();
+        }
+
+        function submitContactForm(event) {
+            event.preventDefault();
+            showNotification('Сообщение отправлено! Мы ответим вам в ближайшее время.');
+            closeModal('contactModal');
+            document.getElementById('contactForm').reset();
+        }
+
+        // Cart functions
+        function openCart() {
+            cartModal.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCart() {
+            cartModal.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Add predefined plans to cart
+        function addToCart(plan, name, price, description) {
+            cart.push({
+                id: plan,
+                name,
+                price,
+                description,
+                quantity: 1
+            });
+            
+            updateCart();
+            showNotification(`Тариф "${name}" добавлен в корзину!`);
+        }
+
+        // Add custom plan to cart
+        function addCustomPlanToCart() {
+            const totalPrice = calculateCustomPlanPrice();
+            
+            const devices = document.getElementById('devicesCount').value;
+            const scenarios = document.getElementById('scenariosCount').value;
+            const visualization = document.querySelector('input[name="visualization"]:checked').nextElementSibling.textContent;
+            const integration = document.querySelector('input[name="integration"]:checked').nextElementSibling.textContent;
+            const support = document.querySelector('input[name="support"]:checked').nextElementSibling.textContent;
+            
+            let addons = [];
+            document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+                addons.push(checkbox.nextElementSibling.textContent);
+            });
+            
+            const description = `Устройства: ${devices} шт., Сценарии: ${scenarios} шт., Визуализация: ${visualization}, Интеграция: ${integration}, Поддержка: ${support}${addons.length > 0 ? ', Модули: ' + addons.join(', ') : ''}`;
+            
+            cart.push({
+                id: 'custom-' + Date.now(),
+                name: 'Конструктор',
+                price: totalPrice,
+                description,
+                quantity: 1
+            });
+            
+            updateCart();
+            showNotification('Индивидуальный тариф добавлен в корзину!');
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+            showNotification('Товар удален из корзины');
+        }
+
+        function updateCart() {
+            // Update cart count
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            // Update cart items
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="empty-cart-message" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">Корзина пуста</div>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <div class="cart-item-details">${item.description}</div>
+                            <div class="cart-item-price">${formatPrice(item.price)}/мес.</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button class="remove-item" onclick="removeFromCart('${item.id}')">Удалить</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Update total
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = formatPrice(total);
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                showNotification('Корзина пуста!');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            showNotification(`Заказ оформлен! Сумма: ${formatPrice(total)}. Менеджер свяжется с вами в течение часа.`);
+            
+            // Clear cart
+            cart = [];
+            updateCart();
+            closeCart();
+        }
+
+        // Custom plan price calculation
+        function getScalingFactor(deviceCount) {
+            if (deviceCount <= 5000) return 1.0;
+            if (deviceCount <= 15000) return 1.2;
+            if (deviceCount <= 30000) return 1.5;
+            if (deviceCount <= 50000) return 1.8;
+            return 2.3;
+        }
+
+        function calculateCustomPlanPrice() {
+            const MINIMUM_PRICE = 55000;
+            const devicePrice = 20;
+            const scenarioPrice = 4000;
+            
+            const devices = parseInt(document.getElementById('devicesCount').value) || 0;
+            const scenarios = parseInt(document.getElementById('scenariosCount').value) || 0;
+            
+            const scalingFactor = getScalingFactor(devices);
+            
+            const visualization = parseInt(document.querySelector('input[name="visualization"]:checked').value) || 0;
+            const integration = parseInt(document.querySelector('input[name="integration"]:checked').value) || 0;
+            const support = parseInt(document.querySelector('input[name="support"]:checked').value) || 0;
+            
+            let addonsPrice = 0;
+            document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+                addonsPrice += parseInt(checkbox.value);
+            });
+            
+            const calculatedPrice = (devices * devicePrice * scalingFactor) + (scenarios * scenarioPrice) + visualization + integration + support + addonsPrice;
+            
+            // Apply minimum price
+            return Math.max(calculatedPrice, MINIMUM_PRICE);
+        }
+
+        function updateCustomPlanPrice() {
+            const totalPrice = calculateCustomPlanPrice();
+            document.getElementById('customPlanPrice').textContent = formatPrice(totalPrice);
+            
+            // Update summary
+            const devices = parseInt(document.getElementById('devicesCount').value) || 0;
+            const scenarios = parseInt(document.getElementById('scenariosCount').value) || 0;
+            const devicePrice = 20;
+            const scenarioPrice = 4000;
+            
+            const scalingFactor = getScalingFactor(devices);
+            document.getElementById('scalingFactor').textContent = scalingFactor;
+            
+            const visualization = parseInt(document.querySelector('input[name="visualization"]:checked').value) || 0;
+            const integration = parseInt(document.querySelector('input[name="integration"]:checked').value) || 0;
+            const support = parseInt(document.querySelector('input[name="support"]:checked').value) || 0;
+            
+            let addonsPrice = 0;
+            document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+                addonsPrice += parseInt(checkbox.value);
+            });
+            
+            document.getElementById('summaryDevices').textContent = devices;
+            document.getElementById('summaryDevicesPrice').textContent = formatPrice(devices * devicePrice * scalingFactor);
+            document.getElementById('summaryScenarios').textContent = scenarios;
+            document.getElementById('summaryScenariosPrice').textContent = formatPrice(scenarios * scenarioPrice);
+            document.getElementById('summaryVisualizationPrice').textContent = formatPrice(visualization);
+            document.getElementById('summaryIntegrationPrice').textContent = formatPrice(integration);
+            document.getElementById('summarySupportPrice').textContent = formatPrice(support);
+            document.getElementById('summaryAddonsPrice').textContent = formatPrice(addonsPrice);
+            document.getElementById('summaryTotalPrice').textContent = formatPrice(totalPrice);
+        }
+
+        // Chat functions
+        function toggleChat() {
+            chatModal.classList.toggle('active');
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.textContent = message;
+            chatMessages.appendChild(userMessage);
+            
+            // Clear input
+            chatInput.value = '';
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simulate bot response
+            setTimeout(() => {
+                const botResponse = getBotResponse(message);
+                const botMessage = document.createElement('div');
+                botMessage.className = 'message bot';
+                botMessage.textContent = botResponse;
+                chatMessages.appendChild(botMessage);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        }
+
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('тариф') || lowerMessage.includes('цена') || lowerMessage.includes('стоимость')) {
+                return 'У нас есть несколько тарифов: Стартап (50 000 ₽), Прорыв (300 000 ₽), Единорог (4 000 000 ₽) и конструктор с минимальной ценой 55 000 ₽. Какой вас интересует?';
+            } else if (lowerMessage.includes('демо') || lowerMessage.includes('попробовать')) {
+                return 'Вы можете запросить демо-версию, нажав кнопку "Запросить демо" в шапке сайта. Мы отправим вам доступ в течение 24 часов.';
+            } else if (lowerMessage.includes('поддержка') || lowerMessage.includes('помощь')) {
+                return 'Наша поддержка работает 24/7. Вы можете связаться с нами по телефону +7 (495) 123-45-67 или email: support@prometheus-nexus.ru';
+            } else if (lowerMessage.includes('устройство') || lowerMessage.includes('датчик')) {
+                return 'Виртуальные устройства эмулируют реальные IoT-датчики. В тарифе "Стартап" доступно до 100 устройств, в "Прорыве" - до 10 000, а в "Единороге" - неограниченно. В конструкторе цена зависит от количества устройств с коэффициентом масштабирования.';
+            } else if (lowerMessage.includes('сценарий') || lowerMessage.includes('моделирование')) {
+                return 'Сценарии позволяют моделировать различные условия работы вашего продукта. В конструкторе вы можете выбрать нужное количество сценариев.';
+            } else {
+                return 'Спасибо за ваш вопрос! Для более подробной информации вы можете ознакомиться с разделами сайта или связаться с нашим менеджером.';
+            }
+        }
+
+        // Allow sending message with Enter key
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
+        }
+
+        // Action functions
+        function showFeatureInfo(info) {
+            showNotification(info);
+        }
+
+        function showStepInfo(info) {
+            showNotification(info);
+        }
+
+        function contactSupport() {
+            showNotification('Отправьте запрос в службу поддержки на support@prometheus-nexus.ru');
+        }
+
+        function showDocs() {
+            showNotification('Документация доступна после регистрации в личном кабинете');
+        }
+
+        function showContacts() {
+            openModal('contactModal');
+        }
+
+        function showSystemStatus() {
+            showNotification('Система работает стабильно. За последние 30 дней доступность 99.98%');
+        }
+
+        function showAbout() {
+            showNotification('Prometheus Nexus - лидер в области IIoT решений с 2018 года');
+        }
+
+        function visitBlog() {
+            showNotification('Читайте наш блог на blog.prometheus-nexus.ru');
+        }
+
+        function showCareers() {
+            showNotification('Отправьте резюме на career@prometheus-nexus.ru');
+        }
+
+        function showPartners() {
+            showNotification('Станьте нашим партнером! Заполните заявку на сайте');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                z-index: 3000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize
+        updateCustomPlanPrice();
+        updateCart();
+    </script>
+</body>
+</html>
